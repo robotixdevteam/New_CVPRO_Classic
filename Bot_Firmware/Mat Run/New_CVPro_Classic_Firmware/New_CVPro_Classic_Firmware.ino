@@ -48,21 +48,14 @@ Servo servo;
 #define FRONT_TRIGGER 12 
 #define FRONT_ECHO  4  
 
-#define MAX_DISTANCE 400
+#define MAX_DISTANCE 200
 
 NewPing sonar1(FRONT_TRIGGER, FRONT_ECHO, MAX_DISTANCE); 
 
 int front_us;
 
 //#---Servo Angles---####################################################################
-int servo_center = 105;//deg
-int left_turn_angle = servo_center - 20; //80 deg
-int right_turn_angle = servo_center + 20;//120 deg
-
-#define DPDT_Push_Button_Pin 34
-
-bool LOGIC_LOCK = 1; //1 True state.
-bool DPDT_STATE = 0; //0 False state.
+int servo_center = 95;//deg
 
 // ########### Functions ############################################################################################################ //
 // RGB Led Function
@@ -95,26 +88,10 @@ void motor_stop() {
 // Servo Functions
 void moveServoTo(int angle) 
 {
-  angle = constrain(angle, 75, 135);
+  angle = constrain(angle, 75, 125);
   servo.write(angle);
 }
 
-int F_US()
-{
-   front_us = sonar1.ping_cm();
-  
-  if(front_us != 0)
-  {
-    Serial.println("F_US : " + String(front_us));
-
-    if(front_us < 20)
-    {
-      Serial.println("F_US : " + String(front_us));
-      bot_shutdown(); 
-    }
-        
-  }
-}
 
 void bot_shutdown()
 {
@@ -122,16 +99,6 @@ void bot_shutdown()
   moveServoTo(servo_center);
   //rgb_led(0, 0, 0);
 }
-
-float batteryVoltage(int analogInPin) {
-  int sensorValue = analogRead(analogInPin);  // Read the voltage on the ADC pin
-  // Serial.print("Battery voltage: ");
-  float voltage = (sensorValue / 4095.0) * 4;
-  // Serial.print(voltage);
-  delay(500);  // Wait for 1 second before reading again
-  return voltage;
-}
-
 
 void callback(char *topic, byte *payload, unsigned int length) {
   Serial.print("Message arrived in topic: ");
@@ -193,7 +160,7 @@ void wifi_setup()
   client.setCallback(callback);
   while (!client.connected()) 
   {
-    String client_id = "esp32-client-";
+    String client_id = "New_CVPRO_Bot_Client-";
     client_id += String(WiFi.macAddress());
     // Serial.printf("The client %s connects to the public mqtt broker\n", client_id.c_str());
     if (client.connect(client_id.c_str(), mqtt_username, mqtt_password)) 
@@ -209,9 +176,6 @@ void wifi_setup()
       // Serial.print(client.state());
       rgb_led(255, 0, 0);
       bot_shutdown();
-      // delay(100);
-      // rgb_led(0, 0, 0);
-      // delay(100);
     }
   }
 
@@ -222,9 +186,6 @@ void wifi_setup()
 // ########### Setup ############################################################################################################ //
 void setup() {
   Serial.begin(115200);
-
-  //######### DPDT Setup #########//
-  pinMode(DPDT_Push_Button_Pin, INPUT);
 
   //######### RGB Led Setup #########//
   FastLED.addLeds<NEOPIXEL, LED_PIN>(leds, NUM_LEDS);
@@ -241,7 +202,7 @@ void setup() {
 
   //######### Servo Motor Setup ###########//
 
-  servo.attach(SERVO_PIN, 500, 2400);
+ //servo.attach(SERVO_PIN, 500, 2400);
   //initial servo angle
   moveServoTo(servo_center);
   delay(10); 
@@ -251,29 +212,13 @@ void setup() {
   wifi_setup();
 }
 
-
-void battery_low_fun()
-{
-  if (batv < 3.50) 
-  {
-    rgb_led(255, 0, 0);
-    motor_stop();
-    moveServoTo(servo_center);
-  }
-  else
-  {
-    client.loop();  // Maintain the MQTT connection 
-  }    
-}
-
-
 void loop() {
 
   front_us = sonar1.ping_cm();
   
   if((front_us < 20) && (front_us != 0))
   {
-    Serial.println("F_US : " + String(front_us));
+    //Serial.println("F_US : " + String(front_us));
     bot_shutdown(); 
   }
   

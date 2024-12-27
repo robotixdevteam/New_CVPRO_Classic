@@ -5,9 +5,9 @@
 Servo servo;
 
 // Set the bot servo angles
-int left = 80;
+int left = 75;
 int center = 100;
-int right = 120;
+int right = 125;
 
 
 void setup() {
@@ -39,8 +39,8 @@ void Sample_Servo_Test()
 
 void loop() {
   // To Set Servo Center
-  moveServoTo(100);
+  //moveServoTo(100);
 
-  //Sample_Servo_Test();
+  Sample_Servo_Test();
 
 }
